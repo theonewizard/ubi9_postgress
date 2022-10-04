@@ -18,8 +18,13 @@ STOPSIGNAL SIGRTMIN+3
 RUN systemctl mask systemd-remount-fs.service dev-hugepages.mount sys-fs-fuse-connections.mount systemd-logind.service getty.target console-getty.service systemd-udev-trigger.service systemd-udevd.service systemd-random-seed.service systemd-machine-id-commit.service
 
 RUN dnf -y update && \
+    SMDEV_CONTAINER_OFF=1 subscription-manager register --org=15517660 --activationkey=rhel-containerbuild && \
     dnf install -y openssh-server procps-ng sudo && \
+    SMDEV_CONTAINER_OFF=1 subscription-manager unregister && \
     dnf clean all && \
-    sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers
+    echo -e '[main]\nenabled=0' >  /etc/yum/pluginconf.d/subscription-manager.conf
+
+#Sudo requires a tty. fix that.
+RUN sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers
 
 CMD ["/sbin/init"]
