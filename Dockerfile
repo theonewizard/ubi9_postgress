@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi
+FROM registry.access.redhat.com/ubi9/ubi::latest
 LABEL maintainer="DSV UBI9 based Image"
 
 LABEL com.redhat.component="ubi9-init-container"
@@ -17,10 +17,14 @@ STOPSIGNAL SIGRTMIN+3
 #mask systemd-machine-id-commit.service - partial fix for https://bugzilla.redhat.com/show_bug.cgi?id=1472439
 RUN systemctl mask systemd-remount-fs.service dev-hugepages.mount sys-fs-fuse-connections.mount systemd-logind.service getty.target console-getty.service systemd-udev-trigger.service systemd-udevd.service systemd-random-seed.service systemd-machine-id-commit.service
 
-RUN dnf -y update; dnf -y install procps-ng sudo && dnf clean all
+RUN dnf -y update && \
+    dnf -y install procps-ng sudo && \ 
+    SMDEV_CONTAINER_OFF=1 subscription-manager register --org=15517660 --activationkey=rhel-containerbuild && \
+    yum update && yum install -y procps-ng sudo openssh-server && \
+    SMDEV_CONTAINER_OFF=1 subscription-manager unregister && \
+    yum clean all && \
+    echo -e '[main]\nenabled=0' >  /etc/yum/pluginconf.d/subscription-manager.conf
 
-ADD ./postgresql-setup /usr/bin/postgresql-setup
-ADD ./start_postgres.sh /start_postgres.sh
 
 #Sudo requires a tty. fix that.
 RUN sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers
