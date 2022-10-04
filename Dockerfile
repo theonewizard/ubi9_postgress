@@ -17,6 +17,13 @@ STOPSIGNAL SIGRTMIN+3
 #mask systemd-machine-id-commit.service - partial fix for https://bugzilla.redhat.com/show_bug.cgi?id=1472439
 RUN systemctl mask systemd-remount-fs.service dev-hugepages.mount sys-fs-fuse-connections.mount systemd-logind.service getty.target console-getty.service systemd-udev-trigger.service systemd-udevd.service systemd-random-seed.service systemd-machine-id-commit.service
 
+# Add packages not in RHEL UBI
+RUN SMDEV_CONTAINER_OFF=1 subscription-manager register --org=15517660 --activationkey=rhel-containerbuild && \
+    dnf install -y postgresql-server postgresql-contrib && \
+    SMDEV_CONTAINER_OFF=1 subscription-manager unregister && \
+    yum clean all && \
+    echo -e '[main]\nenabled=0' >  /etc/yum/pluginconf.d/subscription-manager.conf
+
 RUN dnf -y update; dnf -y install procps-ng sudo postgresql && dnf clean all
 
 ADD ./postgresql-setup /usr/bin/postgresql-setup
