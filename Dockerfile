@@ -1,4 +1,4 @@
-FROM registry-proxy.engineering.redhat.com/rh-osbs/ubi9
+FROM registry.access.redhat.com/ubi9/ubi
 LABEL maintainer="DSV UBI9 based Postgress Image Builder"
 
 LABEL com.redhat.component="ubi9-init-container"
