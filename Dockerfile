@@ -17,11 +17,7 @@ STOPSIGNAL SIGRTMIN+3
 #mask systemd-machine-id-commit.service - partial fix for https://bugzilla.redhat.com/show_bug.cgi?id=1472439
 RUN systemctl mask systemd-remount-fs.service dev-hugepages.mount sys-fs-fuse-connections.mount systemd-logind.service getty.target console-getty.service systemd-udev-trigger.service systemd-udevd.service systemd-random-seed.service systemd-machine-id-commit.service
 
-RUN dnf -y install procps-ng && dnf clean all
-
-RUN dnf -y update; dnf clean all
-
-RUN dnf -y install sudo postgresql-server postgresql postgresql-contrib; dnf clean all
+RUN dnf -y update; dnf -y install procps-ng sudo postgresql-server postgresql postgresql-contrib && dnf clean all
 
 ADD ./postgresql-setup /usr/bin/postgresql-setup
 ADD ./start_postgres.sh /start_postgres.sh
@@ -43,4 +39,5 @@ VOLUME ["/var/lib/pgsql"]
 
 EXPOSE 5432
 
-CMD ["/bin/bash", "/start_postgres.sh"]
+##CMD ["/bin/bash", "/start_postgres.sh"]
+CMD ["/sbin/init"]
