@@ -20,6 +20,7 @@ RUN systemctl mask systemd-remount-fs.service dev-hugepages.mount sys-fs-fuse-co
 RUN dnf -y update && \
     SMDEV_CONTAINER_OFF=1 subscription-manager register --org=15517660 --activationkey=rhel-containerbuild && \
     sleep 120 && \
+    SMDEV_CONTAINER_OFF=1 subscription-manager refresh && \
     dnf install -y openssh-server procps-ng sudo && \
     SMDEV_CONTAINER_OFF=1 subscription-manager unregister && \
     dnf clean all && \
