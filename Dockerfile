@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi:latest
+FROM registry.access.redhat.com/ubi9/ubi:latest
 LABEL maintainer="DSV UBI9 based Image"
 
 LABEL com.redhat.component="ubi9-init-container"
