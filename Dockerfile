@@ -18,7 +18,7 @@ STOPSIGNAL SIGRTMIN+3
 RUN systemctl mask systemd-remount-fs.service dev-hugepages.mount sys-fs-fuse-connections.mount systemd-logind.service getty.target console-getty.service systemd-udev-trigger.service systemd-udevd.service systemd-random-seed.service systemd-machine-id-commit.service
 
 RUN dnf -y update && \
-    SMDEV_CONTAINER_OFF=1 subscription-manager register --org=15517660 --activationkey=rhel-containerbuild && \
+    SMDEV_CONTAINER_OFF=1 subscription-manager register --org=15517660 --activationkey=rhel-containerbuild --auto-attach && \
     dnf install -y openssh-server procps-ng sudo && \
     SMDEV_CONTAINER_OFF=1 subscription-manager unregister && \
     dnf clean all && \
