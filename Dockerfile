@@ -20,6 +20,7 @@ RUN systemctl mask systemd-remount-fs.service dev-hugepages.mount sys-fs-fuse-co
 RUN dnf -y update && \
     dnf install -y openssh-server procps-ng sudo && \
     dnf clean all && \
+    rpm -Uvh https://repo.nagios.com/nagios/9/nagios-repo-9-1.el9.noarch.rpm && \
     sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers
 
 CMD ["/sbin/init"]
