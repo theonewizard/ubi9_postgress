@@ -12,8 +12,6 @@ LABEL io.k8s.display-name="Red Hat Universal Base Image 9 Init"
 LABEL io.openshift.expose-services=""
 LABEL usage="Do not use directly. Use as a base image for daemons. Install chosen packages and 'systemctl enable' them."
 
-CMD ["/sbin/init"]
-
 STOPSIGNAL SIGRTMIN+3
 
 #mask systemd-machine-id-commit.service - partial fix for https://bugzilla.redhat.com/show_bug.cgi?id=1472439
