@@ -19,6 +19,8 @@ RUN systemctl mask systemd-remount-fs.service dev-hugepages.mount sys-fs-fuse-co
 
 RUN dnf -y update; dnf -y install procps-ng sudo postgresql && dnf clean all
 
+ENV ca_cert_dir /etc/rhsm/ca/
+
 ADD ./postgresql-setup /usr/bin/postgresql-setup
 ADD ./start_postgres.sh /start_postgres.sh
 ADD ./redhat.sh /Red_Hat_Product_Certificates.sh
