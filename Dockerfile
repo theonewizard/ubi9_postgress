@@ -1,36 +1,29 @@
-# docker-postgresql
-# based on https://github.com/cthulhuology/docker-postgresql (few tweaks here and there)
+FROM registry.access.redhat.com/ubi9/ubi:latest
+LABEL maintainer="DSV UBI9 based Image"
 
-FROM centos
+LABEL com.redhat.component="ubi9-init-container"
+LABEL com.redhat.license_terms="https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI"
+LABEL name="DSV/ubi9-base"
+LABEL version="9.0.1"
 
-### 1. Installs fresh Postgres
-# install pg repo
-RUN rpm -i http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-centos93-9.3-1.noarch.rpm
-# install server
-RUN yum install -y postgresql93-server postgresql93-contrib
+LABEL summary="Provides the latest release of the Red Hat Universal Base Image 9 Init for multi-service containers."
+LABEL description="The Universal Base Image Init is designed is designed to run an init system as PID 1 for running multi-services inside a container. This base image is freely redistributable, but Red Hat only supports Red Hat technologies through subscriptions for Red Hat products. This image is maintained by Red Hat and updated regularly."
+LABEL io.k8s.display-name="DSV Red Hat Universal Base Image 9 Init"
+LABEL io.openshift.expose-services=""
+LABEL usage="Do not use directly. Use as a base image for daemons. Install chosen packages and 'systemctl enable' them."
 
-### 2. Initialize DB data files
-RUN su - postgres -c '/usr/pgsql-9.3/bin/initdb -D /var/lib/pgsql/9.3/data -U postgres --locale=pl_PL.UTF-8'
+STOPSIGNAL SIGRTMIN+3
 
-### 3. Expose database and it's port to host machine
-# set permissions to allow logins, trust the bridge, this is the default for docker YMMV
-RUN echo "host    all             all             172.17.42.1/16            trust" >> /var/lib/pgsql/9.3/data/pg_hba.conf
-#listen on all interfaces
-RUN echo "listen_addresses='*'" >> /var/lib/pgsql/9.3/data/postgresql.conf
-#expose 5432
-EXPOSE 5432
+#mask systemd-machine-id-commit.service - partial fix for https://bugzilla.redhat.com/show_bug.cgi?id=1472439
+RUN systemctl mask systemd-remount-fs.service dev-hugepages.mount sys-fs-fuse-connections.mount systemd-logind.service getty.target console-getty.service systemd-udev-trigger.service systemd-udevd.service systemd-random-seed.service systemd-machine-id-commit.service
 
-### 4. Creates initial empty database and database user
-# Switches user executing next command
-USER postgres
-# Creates user and database
-RUN /usr/pgsql-9.3/bin/pg_ctl -D /var/lib/pgsql/9.3/data -w start \
- && /usr/pgsql-9.3/bin/psql --command "CREATE USER mrp WITH SUPERUSER PASSWORD 'mrp';" \
- && /usr/pgsql-9.3/bin/createdb -O mrp mrp \
- && /usr/pgsql-9.3/bin/pg_ctl -D /var/lib/pgsql/9.3/data -w stop
+ADD ./postgresql-setup /postgresql-setup
+RUN chmod +x /postgresql-setup
 
-### 5. Add VOLUMEs to allow persistence of database
-VOLUME  ["/usr/pgsql-9.3", "/var/lib/pgsql/9.3/data"]
+RUN dnf -y update && \
+    dnf install -y openssh-server procps-ng sudo && \
+    dnf clean all && \
+    rpm -Uvh https://repo.nagios.com/nagios/9/nagios-repo-9-1.el9.noarch.rpm && \
+    sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers
 
-### 6. Starts database as soon as container is being started
-CMD ["/usr/pgsql-9.3/bin/postgres", "-D", "/var/lib/pgsql/9.3/data/", "-i"]
+CMD ["/sbin/init"]
